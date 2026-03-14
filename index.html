@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CipherKey — Cyber Security AES Encryption Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --hacker-green: #00ff9c;
+            --neon-green: #00ffa6;
+            --cyber-blue: #0ea5e9;
+            --warning-orange: #f59e0b;
+            --error-red: #ef4444;
+            --bg-color: #020617;
+            --terminal-black: #000000;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --card-bg: rgba(15, 23, 42, 0.8);
+            --border-color: rgba(0, 255, 156, 0.2);
+            --glow-shadow: 0 0 15px rgba(0, 255, 156, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f1f5f9;
+            --terminal-black: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border-color: rgba(0, 255, 156, 0.4);
+            --glow-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Cyber Grid Background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--border-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.1;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--glow-shadow);
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--hacker-green);
+            text-shadow: 0 0 10px var(--hacker-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: var(--transition);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-btn.active {
+            color: var(--hacker-green);
+            border-color: var(--hacker-green);
+            background: rgba(0, 255, 156, 0.1);
+            box-shadow: 0 0 10px rgba(0, 255, 156, 0.2);
+        }
+
+        .theme-toggle {
+            background: var(--terminal-black);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--hacker-green);
+            box-shadow: 0 0 10px var(--hacker-green);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            width: 100%;
+            padding: 0 1rem;
+        }
+
+        section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--glow-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--hacker-green);
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            margin-bottom: 1.5rem;
+            color: var(--hacker-green);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .step-number {
+            background: var(--hacker-green);
+            color: var(--terminal-black);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 900;
+        }
+
+        /* Key Level Selector */
+        .key-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .key-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .key-card:hover {
+            background: rgba(0, 255, 156, 0.05);
+            transform: translateY(-5px);
+        }
+
+        .key-card.active {
+            border-color: var(--hacker-green);
+            background: rgba(0, 255, 156, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 156, 0.3);
+        }
+
+        .key-card .bits {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .key-card .bytes {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .key-card .label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .key-card.active .label {
+            background: var(--hacker-green);
+            color: var(--terminal-black);
+        }
+
+        /* Stats Pills */
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-pill {
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid var(--cyber-blue);
+            color: var(--cyber-blue);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-pill.green {
+            background: rgba(0, 255, 156, 0.1);
+            border-color: var(--hacker-green);
+            color: var(--hacker-green);
+        }
+
+        /* Textarea and Inputs */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--hacker-green);
+            box-shadow: 0 0 10px rgba(0, 255, 156, 0.2);
+        }
+
+        /* Word Chips */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            min-height: 32px;
+        }
+
+        .chip {
+            background: rgba(0, 255, 156, 0.05);
+            border: 1px solid var(--hacker-green);
+            color: var(--hacker-green);
+            padding: 2px 10px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Strength Bar */
+        .strength-container {
+            margin-top: 1rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        /* Buttons */
+        .cyber-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: linear-gradient(135deg, var(--hacker-green), var(--cyber-blue));
+            color: var(--terminal-black);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 156, 0.3);
+        }
+
+        .cyber-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 255, 156, 0.5);
+        }
+
+        .cyber-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .cyber-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+            box-shadow: none;
+        }
+
+        /* Output Section */
+        .output-section {
+            display: none;
+            margin-top: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .output-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .output-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            color: var(--hacker-green);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--hacker-green);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: var(--hacker-green);
+            color: var(--terminal-black);
+        }
+
+        .action-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .secondary-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--hacker-green);
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(0, 255, 156, 0.1);
+            border-color: var(--hacker-green);
+        }
+
+        /* Decrypt Layout */
+        .decrypt-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Error/Success Cards */
+        .status-card {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status-card.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-red);
+            color: var(--error-red);
+        }
+
+        .status-card.success {
+            background: rgba(0, 255, 156, 0.1);
+            border: 1px solid var(--hacker-green);
+            color: var(--hacker-green);
+            box-shadow: 0 0 15px rgba(0, 255, 156, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--terminal-black);
+            border-top: 1px solid var(--hacker-green);
+            padding: 2rem;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .footer-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .social-link {
+            color: var(--hacker-green);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+        }
+
+        .social-link:hover {
+            text-shadow: 0 0 10px var(--hacker-green);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .key-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .decrypt-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-group {
+                flex-direction: column;
+            }
+
+            .logo {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+
+    <header>
+        <div class="logo">CipherKey 🔐</div>
+        <nav>
+            <button class="nav-btn active" onclick="switchPage('encrypt')">Encrypt</button>
+            <button class="nav-btn" onclick="switchPage('decrypt')">Decrypt</button>
+        </nav>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span id="theme-icon">🌙</span>
+            <span id="theme-text">Dark Mode</span>
+        </button>
+    </header>
+
+    <main>
+        <!-- Encrypt Page -->
+        <section id="page-encrypt" class="active">
+            <div class="card">
+                <h2><span class="step-number">1</span> Encryption Level</h2>
+                <div class="key-selector">
+                    <div class="key-card active" onclick="selectKeyLevel(128, this)">
+                        <span class="bits">128 bit</span>
+                        <span class="bytes">16 bytes</span>
+                        <span class="label">Fast</span>
+                    </div>
+                    <div class="key-card" onclick="selectKeyLevel(192, this)">
+                        <span class="bits">192 bit</span>
+                        <span class="bytes">24 bytes</span>
+                        <span class="label">Balanced</span>
+                    </div>
+                    <div class="key-card" onclick="selectKeyLevel(256, this)">
+                        <span class="bits">256 bit</span>
+                        <span class="bytes">32 bytes</span>
+                        <span class="label">Maximum Security</span>
+                    </div>
+                </div>
+
+                <div class="stats-container">
+                    <div class="stat-pill">Algorithm: AES-CBC</div>
+                    <div class="stat-pill" id="stat-key-size">Key: 16 bytes</div>
+                    <div class="stat-pill">Block: 128 bit</div>
+                    <div class="stat-pill">IV: 16 bytes random</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><span class="step-number">2</span> Message Input</h2>
+                <div class="input-group">
+                    <textarea id="encrypt-input" placeholder="Enter message to encrypt..." oninput="handleEncryptInput(this)"></textarea>
+                    <div class="chips-container" id="word-chips"></div>
+                    <div class="strength-container">
+                        <div class="strength-bar">
+                            <div id="strength-fill" class="strength-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                <button id="encrypt-btn" class="cyber-btn" onclick="performEncryption()" disabled>Encrypt Message</button>
+            </div>
+
+            <div id="encrypt-output-section" class="output-section">
+                <div class="card">
+                    <h2><span class="step-number">3</span> Result</h2>
+                    <div class="stats-container">
+                        <div class="stat-pill green">AES-CBC</div>
+                        <div class="stat-pill green">Base64</div>
+                        <div class="stat-pill green">PKCS7</div>
+                    </div>
+
+                    <div class="output-block">
+                        <span class="output-label">Ciphertext (IV + Data)</span>
+                        <div id="ciphertext-output" class="output-text"></div>
+                        <button class="copy-btn" onclick="copyText('ciphertext-output', this)">Copy</button>
+                    </div>
+
+                    <div class="output-block">
+                        <span class="output-label">Encryption Key (Keep Secret!)</span>
+                        <div id="key-output" class="output-text"></div>
+                        <button class="copy-btn" onclick="copyText('key-output', this)">Copy Key</button>
+                    </div>
+
+                    <div class="action-group">
+                        <button class="secondary-btn" onclick="copyAll()">Copy All Data</button>
+                        <button class="secondary-btn" onclick="resetEncrypt()">New Encryption</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Decrypt Page -->
+        <section id="page-decrypt">
+            <div class="card">
+                <h2><span class="step-number">1</span> Input Data</h2>
+                <div class="decrypt-grid">
+                    <div class="input-group">
+                        <span class="output-label">Ciphertext (Base64)</span>
+                        <textarea id="decrypt-cipher-input" placeholder="Paste ciphertext here..." oninput="analyzeDecryptInput()"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <span class="output-label">Secret Key (Base64)</span>
+                        <textarea id="decrypt-key-input" placeholder="Paste secret key here..." oninput="analyzeDecryptInput()"></textarea>
+                    </div>
+                </div>
+
+                <div class="stats-container" id="decrypt-stats">
+                    <div class="stat-pill">Waiting for input...</div>
+                </div>
+
+                <button id="decrypt-btn" class="cyber-btn" onclick="performDecryption()" disabled>Decrypt Message</button>
+                <div id="decrypt-error" class="status-card error" style="display: none;"></div>
+            </div>
+
+            <div id="decrypt-output-section" class="output-section">
+                <div class="card">
+                    <h2><span class="step-number">2</span> Decrypted Message</h2>
+                    <div class="status-card success">
+                        <span>✓ Decryption Successful</span>
+                    </div>
+                    <div class="output-block" style="margin-top: 1.5rem;">
+                        <div id="decrypted-text" class="output-text" style="white-space: pre-wrap;"></div>
+                        <button class="copy-btn" onclick="copyText('decrypted-text', this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-text">Created by Ahamed Masry</div>
+        <div class="social-links">
+            <a href="https://iamahamedmasry.github.io/Portfolio/" class="social-link" target="_blank">Portfolio</a>
+            <a href="https://github.com/iamahamedmasry" class="social-link" target="_blank">GitHub</a>
+            <a href="https://www.linkedin.com/in/ahamedmasry-cs/" class="social-link" target="_blank">LinkedIn</a>
+        </div>
+    </footer>
+
+    <script>
+        // State Management
+        let currentKeySize = 128;
+        let theme = localStorage.getItem('theme') || 'dark';
+
+        // Initialize Theme
+        document.documentElement.setAttribute('data-theme', theme);
+        updateThemeUI();
+
+        function toggleTheme() {
+            theme = theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+            if (theme === 'dark') {
+                icon.innerText = '🌙';
+                text.innerText = 'Dark Mode';
+            } else {
+                icon.innerText = '☀';
+                text.innerText = 'Light Mode';
+            }
+        }
+
+        function switchPage(page) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`page-${page}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Encryption Page Logic
+        function selectKeyLevel(bits, element) {
+            currentKeySize = bits;
+            document.querySelectorAll('.key-card').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            document.getElementById('stat-key-size').innerText = `Key: ${bits / 8} bytes`;
+        }
+
+        function handleEncryptInput(textarea) {
+            const text = textarea.value.trim();
+            const btn = document.getElementById('encrypt-btn');
+            btn.disabled = text.length === 0;
+
+            // Word Chips
+            const chipsContainer = document.getElementById('word-chips');
+            const words = text.split(/\s+/).filter(w => w.length > 0).slice(-10);
+            chipsContainer.innerHTML = '';
+            words.forEach(word => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.innerText = word;
+                chipsContainer.appendChild(chip);
+            });
+
+            // Strength Bar
+            const fill = document.getElementById('strength-fill');
+            const strength = Math.min(text.length * 2, 100);
+            fill.style.width = `${strength}%`;
+            
+            if (strength < 30) fill.style.backgroundColor = 'var(--error-red)';
+            else if (strength < 70) fill.style.backgroundColor = 'var(--warning-orange)';
+            else fill.style.backgroundColor = 'var(--hacker-green)';
+        }
+
+        // Crypto Implementation
+        async function performEncryption() {
+            const plaintext = document.getElementById('encrypt-input').value;
+            if (!plaintext) return;
+
+            try {
+                // 1. Generate random key
+                const keyBytes = crypto.getRandomValues(new Uint8Array(currentKeySize / 8));
+                
+                // 2. Generate random IV
+                const iv = crypto.getRandomValues(new Uint8Array(16));
+
+                // 3. Import key
+                const key = await crypto.subtle.importKey(
+                    "raw",
+                    keyBytes,
+                    { name: "AES-CBC" },
+                    true,
+                    ["encrypt"]
+                );
+
+                // 4. Encrypt
+                const encodedPlaintext = new TextEncoder().encode(plaintext);
+                const ciphertextBuffer = await crypto.subtle.encrypt(
+                    { name: "AES-CBC", iv: iv },
+                    key,
+                    encodedPlaintext
+                );
+
+                // 5. Combine IV + ciphertext
+                const combined = new Uint8Array(iv.length + ciphertextBuffer.byteLength);
+                combined.set(iv);
+                combined.set(new Uint8Array(ciphertextBuffer), iv.length);
+
+                // 6. Convert to Base64
+                const base64Ciphertext = btoa(String.fromCharCode(...combined));
+                const base64Key = btoa(String.fromCharCode(...keyBytes));
+
+                // 7. Display
+                document.getElementById('ciphertext-output').innerText = base64Ciphertext;
+                document.getElementById('key-output').innerText = base64Key;
+                document.getElementById('encrypt-output-section').style.display = 'block';
+                
+                // Scroll to result
+                document.getElementById('encrypt-output-section').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                console.error("Encryption failed", e);
+            }
+        }
+
+        function resetEncrypt() {
+            document.getElementById('encrypt-input').value = '';
+            document.getElementById('encrypt-btn').disabled = true;
+            document.getElementById('word-chips').innerHTML = '';
+            document.getElementById('strength-fill').style.width = '0%';
+            document.getElementById('encrypt-output-section').style.display = 'none';
+        }
+
+        // Decryption Page Logic
+        function analyzeDecryptInput() {
+            const cipherInput = document.getElementById('decrypt-cipher-input').value.trim();
+            const keyInput = document.getElementById('decrypt-key-input').value.trim();
+            const stats = document.getElementById('decrypt-stats');
+            const btn = document.getElementById('decrypt-btn');
+            const errorCard = document.getElementById('decrypt-error');
+
+            errorCard.style.display = 'none';
+            btn.disabled = !(cipherInput && keyInput);
+
+            if (!cipherInput && !keyInput) {
+                stats.innerHTML = '<div class="stat-pill">Waiting for input...</div>';
+                return;
+            }
+
+            let statsHtml = '';
+            
+            // Analyze Key
+            try {
+                if (keyInput) {
+                    const keyBytes = atob(keyInput).length;
+                    let algo = 'Unknown';
+                    if (keyBytes === 16) algo = 'AES-128';
+                    else if (keyBytes === 24) algo = 'AES-192';
+                    else if (keyBytes === 32) algo = 'AES-256';
+                    
+                    statsHtml += `<div class="stat-pill ${algo !== 'Unknown' ? 'green' : ''}">Key: ${keyBytes} bytes (${algo})</div>`;
+                }
+            } catch(e) {}
+
+            // Analyze Ciphertext
+            try {
+                if (cipherInput) {
+                    const cipherBytes = atob(cipherInput).length;
+                    statsHtml += `<div class="stat-pill">Ciphertext: ${cipherBytes} bytes</div>`;
+                }
+            } catch(e) {}
+
+            if (statsHtml) stats.innerHTML = statsHtml;
+        }
+
+        async function performDecryption() {
+            const base64Ciphertext = document.getElementById('decrypt-cipher-input').value.trim();
+            const base64Key = document.getElementById('decrypt-key-input').value.trim();
+            const errorCard = document.getElementById('decrypt-error');
+            const outputSection = document.getElementById('decrypt-output-section');
+
+            errorCard.style.display = 'none';
+            outputSection.style.display = 'none';
+
+            try {
+                // 1. Decode Base64 ciphertext
+                const combined = new Uint8Array(atob(base64Ciphertext).split("").map(c => c.charCodeAt(0)));
+                
+                if (combined.length < 17) {
+                    throw new Error("Ciphertext too short");
+                }
+
+                // 2. Extract IV (first 16 bytes)
+                const iv = combined.slice(0, 16);
+
+                // 3. Extract ciphertext (remaining bytes)
+                const ciphertext = combined.slice(16);
+
+                // 4. Decode Base64 key
+                const keyBytes = new Uint8Array(atob(base64Key).split("").map(c => c.charCodeAt(0)));
+                
+                if (![16, 24, 32].includes(keyBytes.length)) {
+                    throw new Error("Invalid key size (must be 16, 24, or 32 bytes)");
+                }
+
+                // 5. Import key
+                const key = await crypto.subtle.importKey(
+                    "raw",
+                    keyBytes,
+                    { name: "AES-CBC" },
+                    true,
+                    ["decrypt"]
+                );
+
+                // 6. Decrypt
+                const decryptedBuffer = await crypto.subtle.decrypt(
+                    { name: "AES-CBC", iv: iv },
+                    key,
+                    ciphertext
+                );
+
+                // 7. Convert result to UTF-8 text
+                const decryptedText = new TextDecoder().decode(decryptedBuffer);
+
+                // Display
+                document.getElementById('decrypted-text').innerText = decryptedText;
+                outputSection.style.display = 'block';
+                outputSection.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (e) {
+                errorCard.innerText = `⚠ Error: ${e.message || "Decryption failed. Check your key and ciphertext."}`;
+                errorCard.style.display = 'flex';
+                console.error(e);
+            }
+        }
+
+        // Utilities
+        function copyText(elementId, btn) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = '✓ Copied';
+                btn.style.background = 'var(--hacker-green)';
+                btn.style.color = 'var(--terminal-black)';
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+
+        function copyAll() {
+            const cipher = document.getElementById('ciphertext-output').innerText;
+            const key = document.getElementById('key-output').innerText;
+            const allText = `Ciphertext: ${cipher}\nKey: ${key}`;
+            
+            navigator.clipboard.writeText(allText).then(() => {
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = '✓ All Copied';
+                setTimeout(() => btn.innerText = originalText, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

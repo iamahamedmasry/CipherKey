@@ -1,0 +1,5 @@
+{
+  "name": "CipherKey",
+  "description": "A professional cyber-security themed AES encryption tool with a hacker-style UI, running entirely in the browser using the Web Crypto API.",
+  "requestFramePermissions": []
+}
